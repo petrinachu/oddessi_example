@@ -1,0 +1,273 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  c:\Users\k2150120\OneDrive - King's College London\admin\6_confs\i
+> ctmc_2026\mOR_ictmc2026\ictmc2026_oddessi_log.log
+  log type:  text
+ opened on:  23 Jan 2026, 11:35:36
+
+. 
+. ** USING EXAMPLE OF ANY RE-REFFERAL TO CRISIS SERVICES OUTCOME
+. use "C:\Users\k2150120\OneDrive - King's College London\Documents\ODDESSI\out
+> \rr_analysis2.dta", clear
+(ODDESSI_2_Live)
+
+. logit any_reref i.arm ib5.catchment list_size imd, or
+
+Iteration 0:  Log likelihood = -337.53701  
+Iteration 1:  Log likelihood = -322.58897  
+Iteration 2:  Log likelihood = -322.54455  
+Iteration 3:  Log likelihood = -322.54454  
+
+Logistic regression                                     Number of obs =    487
+                                                        LR chi2(10)   =  29.98
+                                                        Prob > chi2   = 0.0009
+Log likelihood = -322.54454                             Pseudo R2     = 0.0444
+
+------------------------------------------------------------------------------
+   any_reref | Odds ratio   Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         arm |
+         OD  |   .4354553   .0836597    -4.33   0.000     .2988208    .6345655
+             |
+   catchment |
+   Havering  |   .5294206   .1762808    -1.91   0.056      .275662    1.016775
+Waltham F..  |   .5381242   .1944438    -1.71   0.086     .2650407    1.092578
+    Coastal  |   .8920993   .3767012    -0.27   0.787     .3899255    2.041008
+ Canterbury  |   .8501946   .3039678    -0.45   0.650     .4218816     1.71335
+   Haringey  |    1.80685   1.006729     1.06   0.288     .6062548    5.385043
+  Islington  |    4.19254   3.846537     1.56   0.118     .6942626    25.31807
+Waltham F..  |   .9165821   .4101282    -0.19   0.846     .3813273    2.203154
+             |
+   list_size |   .9999563   .0000449    -0.97   0.330     .9998683    1.000044
+         imd |   .9836032   .0201789    -0.81   0.420     .9448378    1.023959
+       _cons |   4.161204   3.345392     1.77   0.076     .8607902    20.11596
+------------------------------------------------------------------------------
+Note: _cons estimates baseline odds.
+
+. *get marginal predicted probabilities of any re-referral in each arm
+. margins, at(arm=(0 1)) post
+
+Predictive margins                                         Number of obs = 487
+Model VCE: OIM
+
+Expression: Pr(any_reref), predict()
+1._at: arm = 0
+2._at: arm = 1
+
+------------------------------------------------------------------------------
+             |            Delta-method
+             |     Margin   std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         _at |
+          1  |   .6045532   .0328576    18.40   0.000     .5401535    .6689528
+          2  |    .404445   .0299144    13.52   0.000     .3458139    .4630762
+------------------------------------------------------------------------------
+
+.         *if odds ratio is the target estimand:
+.         nlcom (_b[2._at]/(1-_b[2._at]))/(_b[1._at]/(1-_b[1._at]))
+
+       _nl_1: (_b[2._at]/(1-_b[2._at]))/(_b[1._at]/(1-_b[1._at]))
+
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       _nl_1 |    .444213   .0830079     5.35   0.000     .2815205    .6069056
+------------------------------------------------------------------------------
+
+.         *if risk difference is the target estimand:
+.         nlcom (_b[2._at]) - (_b[1._at])
+
+       _nl_1: (_b[2._at]) - (_b[1._at])
+
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       _nl_1 |  -.2001081   .0448254    -4.46   0.000    -.2879644   -.1122519
+------------------------------------------------------------------------------
+
+.         *or risk ratio:
+.         nlcom (_b[2._at])/(_b[1._at])
+
+       _nl_1: (_b[2._at])/(_b[1._at])
+
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       _nl_1 |   .6689983   .0619214    10.80   0.000     .5476345    .7903621
+------------------------------------------------------------------------------
+
+.                 *in case we want to compare against glm for r
+.                 //glm any_reref i.arm ib5.catchment list_size imd, fam(bin) l
+> ink(log) eform
+.                 //WARNING: CONVERGENCE NOT ACHIEVED
+.         
+. ** USING EXAMPLE OF TOTAL DAYS IN PSYCH INPATIENT OUTCOME
+.         // ZERO-INFLATED PORTION TECHNICALLY GIVES ODDS OF ZERO DAYS
+.         // BUT TEAM WAS INTERESTED IN ODDS OF ANY DAYS
+. use "C:\Users\k2150120\OneDrive - King's College London\Documents\ODDESSI\out
+> \rr_analysis2.dta", clear
+(ODDESSI_2_Live)
+
+.         *gen exposure variable
+.         //(date of index crisis [RR_01] to last record review [RR_05])
+.         gen timein = RR_05 - RR_01
+(5 missing values generated)
+
+. zinb indays_tot i.arm ib5.catchment list_size imd, exposure(timein) irr infla
+> te(i.arm ib5.catchment list_size imd)
+
+Fitting constant-only model:
+
+Iteration 0:  Log likelihood = -1301.1165  (not concave)
+Iteration 1:  Log likelihood = -1092.6518  
+Iteration 2:  Log likelihood = -1055.2765  
+Iteration 3:  Log likelihood = -1051.3495  
+Iteration 4:  Log likelihood = -1051.2681  
+Iteration 5:  Log likelihood = -1051.2679  
+Iteration 6:  Log likelihood = -1051.2679  
+
+Fitting full model:
+
+Iteration 0:  Log likelihood = -1051.2679  
+Iteration 1:  Log likelihood = -1038.8894  
+Iteration 2:  Log likelihood = -1036.5902  
+Iteration 3:  Log likelihood = -1036.5435  
+Iteration 4:  Log likelihood = -1036.5434  
+
+Zero-inflated negative binomial regression              Number of obs =    484
+Inflation model: logit                                  Nonzero obs   =    151
+                                                        Zero obs      =    333
+                                                        LR chi2(10)   =  29.45
+Log likelihood = -1036.543                              Prob > chi2   = 0.0011
+
+------------------------------------------------------------------------------
+  indays_tot |        IRR   Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+indays_tot   |
+         arm |
+         OD  |   .8720095   .2195734    -0.54   0.587     .5323378    1.428417
+             |
+   catchment |
+   Havering  |   .5463663   .2485133    -1.33   0.184     .2240355     1.33245
+Waltham F..  |   .4311484   .1974032    -1.84   0.066      .175752    1.057677
+    Coastal  |   1.805313   .8694768     1.23   0.220     .7024181    4.639905
+ Canterbury  |   3.170746    1.40112     2.61   0.009     1.333596    7.538738
+   Haringey  |    1.93032   1.227433     1.03   0.301     .5551053    6.712483
+  Islington  |   6.296313   6.264537     1.85   0.064     .8957371    44.25803
+Waltham F..  |   .9288506   .6263937    -0.11   0.913     .2476948    3.483172
+             |
+   list_size |   .9999064   .0000574    -1.63   0.103     .9997939    1.000019
+         imd |   1.026139   .0235786     1.12   0.261      .980951    1.073409
+       _cons |   .0895367    .082414    -2.62   0.009     .0147405    .5438619
+  ln(timein) |          1  (exposure)
+-------------+----------------------------------------------------------------
+inflate      |
+         arm |
+         OD  |   1.320737   .2400298     5.50   0.000     .8502869    1.791186
+             |
+   catchment |
+   Havering  |   -.273137   .4311197    -0.63   0.526    -1.118116    .5718421
+Waltham F..  |  -1.455035   .4530037    -3.21   0.001    -2.342906    -.567164
+    Coastal  |  -.9374065   .5063186    -1.85   0.064    -1.929773    .0549597
+ Canterbury  |  -.6055854   .4442559    -1.36   0.173    -1.476311    .2651402
+   Haringey  |  -1.487233   .6387482    -2.33   0.020    -2.739157   -.2353094
+  Islington  |  -2.837516   1.101386    -2.58   0.010    -4.996193   -.6788403
+Waltham F..  |   .3733116   .6177094     0.60   0.546    -.8373766       1.584
+             |
+   list_size |   2.15e-06   .0000557     0.04   0.969     -.000107    .0001113
+         imd |    .023452   .0244049     0.96   0.337    -.0243807    .0712846
+       _cons |   .1432937   .9924515     0.14   0.885    -1.801875    2.088463
+-------------+----------------------------------------------------------------
+    /lnalpha |   .5147434   .1522128     3.38   0.001     .2164117    .8130751
+-------------+----------------------------------------------------------------
+       alpha |   1.673209   .2546839                      1.241613    2.254831
+------------------------------------------------------------------------------
+Note: Estimates are transformed only in the first equation to incidence-rate
+      ratios.
+Note: _cons estimates baseline incidence rate.
+
+. *get marginal predicted probabilities of ZERO psych inpatient days in each ar
+> m
+. margins, at(arm=(0 1)) predict(pr) post
+
+Predictive margins                                         Number of obs = 484
+Model VCE: OIM
+
+Expression: Pr(indays_tot=0), predict(pr)
+1._at: arm = 0
+2._at: arm = 1
+
+------------------------------------------------------------------------------
+             |            Delta-method
+             |     Margin   std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         _at |
+          1  |   .5195363   .0373791    13.90   0.000     .4462746     .592798
+          2  |   .7810978   .0261872    29.83   0.000     .7297719    .8324237
+------------------------------------------------------------------------------
+
+.         *if you want mOR of ZERO psych inpatient days:
+.         nlcom (_b[2._at]/(1-_b[2._at]))/(_b[1._at]/(1-_b[1._at]))
+
+       _nl_1: (_b[2._at]/(1-_b[2._at]))/(_b[1._at]/(1-_b[1._at]))
+
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       _nl_1 |   3.299894    .693295     4.76   0.000      1.94106    4.658727
+------------------------------------------------------------------------------
+
+.         *then get marginal predicted probabilities of ANY psych inpatient day
+> s
+.         nlcom (1-_b[1._at])
+
+       _nl_1: 1-_b[1._at]
+
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       _nl_1 |   .4804637   .0373791    12.85   0.000      .407202    .5537254
+------------------------------------------------------------------------------
+
+.         nlcom (1-_b[2._at])
+
+       _nl_1: 1-_b[2._at]
+
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       _nl_1 |   .2189022   .0261872     8.36   0.000     .1675763    .2702281
+------------------------------------------------------------------------------
+
+.                 //can present these probabilities if desired, or extend as ne
+> eded
+.                 *mOR for ANY psych inpatient days:
+.                 nlcom ((1-_b[2._at])/_b[2._at])/((1-_b[1._at])/_b[1._at])
+
+       _nl_1: ((1-_b[2._at])/_b[2._at])/((1-_b[1._at])/_b[1._at])
+
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       _nl_1 |   .3030401   .0636676     4.76   0.000      .178254    .4278262
+------------------------------------------------------------------------------
+
+.                 *risk difference for ANY psych inpatient days:
+.                 nlcom (1-_b[2._at]) - (1-_b[1._at])
+
+       _nl_1: (1-_b[2._at]) - (1-_b[1._at])
+
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       _nl_1 |  -.2615615   .0448186    -5.84   0.000    -.3494044   -.1737186
+------------------------------------------------------------------------------
+
+.         
+. log close
+      name:  <unnamed>
+       log:  c:\Users\k2150120\OneDrive - King's College London\admin\6_confs\i
+> ctmc_2026\mOR_ictmc2026\ictmc2026_oddessi_log.log
+  log type:  text
+ closed on:  23 Jan 2026, 11:36:30
+-------------------------------------------------------------------------------
