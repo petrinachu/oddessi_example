@@ -14,6 +14,12 @@ logit any_reref i.arm ib5.catchment list_size imd, or
 margins, at(arm=(0 1)) post
 	*if odds ratio is the target estimand:
 	nlcom (_b[2._at]/(1-_b[2._at]))/(_b[1._at]/(1-_b[1._at]))
+		/*
+			PLEASE NOTE THAT NLCOM P-VALUES FOR RATIOS WILL NOT MAKE SENSE
+			NULL HYPOTHESIS IS THAT TRANSFORMED COEFFICIENT = 0
+			(see page 9: https://www.stata.com/manuals13/rnlcom.pdf)
+			If a p-value is desired, you need to use 'testnl'
+		*/
 	*if risk difference is the target estimand:
 	nlcom (_b[2._at]) - (_b[1._at])
 	*or risk ratio:
